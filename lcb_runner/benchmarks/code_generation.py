@@ -56,7 +56,10 @@ class CodeGenerationProblem:
     def __post_init__(self):
         self.platform = Platform(self.platform)
         self.difficulty = Difficulty(self.difficulty)
-        self.contest_date = datetime.fromisoformat(self.contest_date)
+        if isinstance(self.contest_date, str):
+            self.contest_date = datetime.fromisoformat(self.contest_date)
+        else:
+            self.contest_date = datetime.fromisoformat(self.contest_date.isoformat())
 
         self.public_test_cases = json.loads(self.public_test_cases)  # type: ignore
         self.public_test_cases = [Test(**t) for t in self.public_test_cases]
@@ -121,15 +124,15 @@ class CodeGenerationProblem:
         }
 
 
-def load_code_generation_dataset(release_version="release_v1") -> list[CodeGenerationProblem]:
-    dataset = load_dataset("livecodebench/code_generation_lite", split="test", version_tag=release_version, trust_remote_code=True)
+def load_code_generation_dataset(release_version="release_v5", **kwargs) -> list[CodeGenerationProblem]:
+    dataset = load_dataset("livecodebench/code_generation_lite", split="test", version_tag=release_version, trust_remote_code=True, **kwargs)
     dataset = [CodeGenerationProblem(**p) for p in dataset]  # type: ignore
     print(f"Loaded {len(dataset)} problems")
     return dataset
 
 
-def load_code_generation_dataset_not_fast(release_version="release_v1") -> list[CodeGenerationProblem]:
-    dataset = load_dataset("livecodebench/code_generation", split="test")
+def load_code_generation_dataset_not_fast(release_version="release_v5", **kwargs) -> list[CodeGenerationProblem]:
+    dataset = load_dataset("livecodebench/code_generation", split="test", trust_remote_code=True, **kwargs)
     dataset = [CodeGenerationProblem(**p) for p in dataset]  # type: ignore
     print(f"Loaded {len(dataset)} problems")
     return dataset
